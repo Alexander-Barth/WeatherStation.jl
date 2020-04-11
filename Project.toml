@@ -1,0 +1,4 @@
+name = "WeatherStation"
+uuid = "7e0a740d-bdbb-4b44-b618-4da689727b03"
+authors = ["Alexander Barth <barth.alexander@gmail.com>"]
+version = "0.1.0"

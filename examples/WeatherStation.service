@@ -1,0 +1,13 @@
+[Unit]
+Description=WeatherStation
+
+[Service]
+ExecStart=/home/abarth/.julia/dev/WeatherStation/examples/getdata.sh
+WorkingDirectory=/home/abarth/.julia/dev/WeatherStation/examples
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+User=abarth
+
+[Install]
+WantedBy=multi-user.target
