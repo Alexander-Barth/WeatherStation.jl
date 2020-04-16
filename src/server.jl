@@ -1,22 +1,25 @@
 
 function server(;  basedir = get(ENV,"WEATHERSTATION_DIR","/var/lib/WeatherStation.jl/"),
-                filename = joinpath(basedir,"dataframe.csv"),
                 port = parse(Int,get(ENV,"WEATHERSTATION_PORT","8081")))
 
 
-    df = DataFrame(CSV.File(filename))
-
-    app = dash("Test app", external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"])
+    app = dash("WeatherStation", external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"])
 
 
-    function make_graph_figure(coeff)
-        x_range = -10.0:0.1:10
+    function make_graph_figure(parameter,taverage)
+        #taverage = 1000 * 60 * 10
+
+        channel = 2
+        model = "Hideki-TS04"
+
+        df = loadavg(basedir,model,channel,taverage)
+
         (
             data = [(
                 x = df[:,:time],
-                y = df[:,Symbol(coeff)]
+                y = df[:,Symbol(parameter)]
             )],
-            layout = (title = "$(coeff)",)
+            layout = (title = "$(parameter) $(taverage/(1000*60)) min",)
         )
     end
 
@@ -32,16 +35,26 @@ function server(;  basedir = get(ENV,"WEATHERSTATION_DIR","/var/lib/WeatherStati
             ],
             value="temperature_C_mean"
         ),
+        dcc_dropdown(
+            id="taverage",
+            options=[
+                Dict("label" => "1 min", "value" => 1000 * 60 * 1),
+                Dict("label" => "10 min", "value" => 1000 * 60 * 10),
+                Dict("label" => "1 hour", "value" => 1000 * 60 * 60),
+                Dict("label" => "24 hour", "value" => 1000 * 60 * 60 * 24),
+            ],
+            value=1000 * 60 * 10
+        ),
         dcc_graph(
             id="graph",
-            figure = make_graph_figure("temperature_C_mean"),
+            figure = make_graph_figure("temperature_C_mean",1000 * 60 * 10),
             style = Dict("padding-top" => "20px")
         )
     end
 
 
-    callback!(app, callid"demo-dropdown.value => graph.figure") do value
-        return make_graph_figure(value)
+    callback!(app, callid"demo-dropdown.value,taverage.value => graph.figure") do value, taverage
+        return make_graph_figure(value,taverage)
     end
 
     @info("open http://localhost:$port/")
