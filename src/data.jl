@@ -23,7 +23,7 @@ end
 
 function loadavg(fnames::AbstractVector{<:AbstractString},model,channel,taverage)
     dfT = load(fnames,model,channel)
-    dfT[!,:time] = Dates.epochms2datetime.(taverage * round.(Int,Dates.datetime2epochms.(dfT[:,:time]) / taverage));
+    dfT[!,:time] = Dates.epochms2datetime.(taverage * round.(Int64,Dates.datetime2epochms.(dfT[:,:time]) / taverage));
 
     df2 = by(dfT,:time,:temperature_C => mean,:humidity => mean, :temperature_C => std, :humidity => std)
     return df2
