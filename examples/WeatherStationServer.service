@@ -2,13 +2,13 @@
 Description=WeatherStationServer
 
 [Service]
-ExecStart=/usr/local/bin/julia /home/abarth/.julia/dev/WeatherStation/examples/run_server.jl
-WorkingDirectory=/home/abarth/.julia/dev/WeatherStation/examples
+ExecStart=/usr/local/bin/julia /home/pi/.julia/dev/WeatherStation/examples/run_server.jl
+WorkingDirectory=/home/pi/.julia/dev/WeatherStation/examples
 StandardOutput=inherit
 StandardError=inherit
 Restart=always
-User=abarth
-Environment=WEATHERSTATION_DIR=/home/abarth/.julia/dev/WeatherStation/examples
+User=pi
+Environment=WEATHERSTATION_DIR=/home/pi/.julia/dev/WeatherStation/examples
 
 
 [Install]

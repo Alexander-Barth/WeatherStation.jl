@@ -2,12 +2,12 @@
 Description=WeatherStation
 
 [Service]
-ExecStart=/home/abarth/.julia/dev/WeatherStation/examples/getdata.sh
-WorkingDirectory=/home/abarth/.julia/dev/WeatherStation/examples
+ExecStart=/home/pi/.julia/dev/WeatherStation/examples/getdata.sh
+WorkingDirectory=/home/pi/.julia/dev/WeatherStation/examples
 StandardOutput=inherit
 StandardError=inherit
 Restart=always
-User=abarth
+User=pi
 
 [Install]
 WantedBy=multi-user.target
