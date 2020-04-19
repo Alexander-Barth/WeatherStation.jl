@@ -54,13 +54,13 @@ function server(;  basedir = get(ENV,"WEATHERSTATION_DIR","/var/lib/WeatherStati
         dcc_datepickerrange(
             id = "date-picker-range",
             min_date_allowed = DateTime(2020, 4, 1),
-            max_date_allowed = Dates.now(),
+            max_date_allowed = Dates.now() + Dates.Day(1),
             start_date = Dates.now() - Dates.Day(7),
-            end_date = Dates.now(),
+            end_date = Dates.now() + Dates.Day(1),
         ),
         dcc_graph(
             id = "graph",
-            figure = make_graph_figure("temperature",1000 * 60 * 10),
+            #figure = make_graph_figure("temperature",1000 * 60 * 10),
             style = Dict("padding-top" => "20px")
         )
     end
