@@ -1,39 +1,45 @@
 
+parameters = [
+    ("Temperatur","temperature"),
+    ("Luftfeuchtigkeit","humidity"),
+    ("Windgeschwindigkeit","wind_speed"),
+    ("Windrichtung","wind_direction"),
+    ("Regenzähler","rain")]
+
 function server(;  basedir = get(ENV,"WEATHERSTATION_DIR","/var/lib/WeatherStation.jl/"),
                 port = parse(Int,get(ENV,"WEATHERSTATION_PORT","8081")))
 
 
-    app = dash("WeatherStation", external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"])
+    app = dash("Wetterstation",
+               external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"],
+#               meta_tags=[
+#                   Dict("name" => "viewport",
+#                        "content" => "width=device-width, initial-scale=1")
+#               ],
+               )
 
 
-    function make_graph_figure(parameter,taverage)
-        #taverage = 1000 * 60 * 10
-
-        channel = 2
-        model = "Hideki-TS04"
-
-        df = loadavg(basedir,model,channel,taverage)
+    function make_graph_figure(parameter,taverage,timerange = (typemin(DateTime),typemax(DateTime)))
+        df = loadavg(basedir,parameter,taverage; timerange = timerange)
+        label = Dict([p[2] => p[1] for p in parameters]...)[parameter]
 
         (
             data = [(
                 x = df[:,:time],
                 y = df[:,Symbol(parameter)]
             )],
-            layout = (title = "$(parameter) $(taverage/(1000*60)) min",)
+            layout = (title = "$(label) $(taverage/(1000*60)) min",)
         )
     end
 
 
     app.layout = html_div() do
 
-        html_h1("Wetterstation"),
+        html_h2("Wetterstation"),
         dcc_dropdown(
-            id="demo-dropdown",
-            options=[
-                Dict("label" => "Temperatur", "value" => "temperature_C_mean"),
-                Dict("label" => "Luftfeuchtigkeit", "value" => "humidity_mean"),
-            ],
-            value="temperature_C_mean"
+            id="parameter",
+            options=[Dict("label" => p[1], "value" => p[2]) for p in parameters],
+            value="temperature"
         ),
         dcc_dropdown(
             id="taverage",
@@ -45,16 +51,25 @@ function server(;  basedir = get(ENV,"WEATHERSTATION_DIR","/var/lib/WeatherStati
             ],
             value=1000 * 60 * 10
         ),
+        dcc_datepickerrange(
+            id = "date-picker-range",
+            min_date_allowed = DateTime(2020, 4, 1),
+            max_date_allowed = Dates.now(),
+            start_date = Dates.now() - Dates.Day(7),
+            end_date = Dates.now(),
+        ),
         dcc_graph(
-            id="graph",
-            figure = make_graph_figure("temperature_C_mean",1000 * 60 * 10),
+            id = "graph",
+            figure = make_graph_figure("temperature",1000 * 60 * 10),
             style = Dict("padding-top" => "20px")
         )
     end
 
 
-    callback!(app, callid"demo-dropdown.value,taverage.value => graph.figure") do value, taverage
-        return make_graph_figure(value,taverage)
+    callback!(app, callid"parameter.value,taverage.value,date-picker-range.start_date,date-picker-range.end_date => graph.figure") do value, taverage, t0, t1
+        timerange = (DateTime(t0),DateTime(t1))
+        @show timerange
+        return make_graph_figure(value,taverage,timerange)
     end
 
     @info("open http://localhost:$port/")
