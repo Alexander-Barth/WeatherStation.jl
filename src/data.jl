@@ -51,9 +51,38 @@ function loadavg(fnames::AbstractVector{<:AbstractString},parameter,taverage;
 end
 
 
-function loadavg(basedir::AbstractString,parameter,taverage; kwargs...)
-    fnames = sort(glob("out-*csv",basedir))
-    return loadavg(fnames,parameter,taverage; kwargs...)
+function filetimerange(fname)
+    time_start = DateTime(replace(replace(basename(fname),"out-" => ""),".csv"  => ""),dateformat"yyyy-mm-ddTHH:MM:SS")
+    # file can stop earlier
+    time_end = time_start + Dates.Day(1)
+    return (time_start,time_end)
+end
+
+function listfile(basedir,timerange)
+    fnames = String[]
+
+    for fname in sort(glob("out-*csv",basedir))
+        time_start,time_end = filetimerange(fname)
+        if (time_start <= timerange[2]) & (timerange[1] <= time_end)
+            @info "keep $fname"
+            push!(fnames,fname)
+        else
+            @info "ignore $fname"
+        end
+    end
+
+    return fnames
+end
+
+function loadavg(basedir::AbstractString,parameter,taverage;
+                 timerange = (typemin(DateTime),typemax(DateTime)),
+                 kwargs...)
+
+    Δt = Dates.Millisecond(taverage)
+    extendedtimerange = (timerange[1]-Δt,timerange[2]+Δt)
+
+    fnames = listfile(basedir,extendedtimerange)
+    return loadavg(fnames,parameter,taverage; timerange = extendedtimerange, kwargs...)
 end
 
 function combine(; basedir = get(ENV,"WEATHERSTATION_DIR","/var/lib/WeatherStation.jl/"))
