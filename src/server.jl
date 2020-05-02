@@ -54,7 +54,7 @@ function server(;  basedir = get(ENV,"WEATHERSTATION_DIR","/var/lib/WeatherStati
         dcc_datepickerrange(
             id = "date-picker-range",
             min_date_allowed = DateTime(2020, 4, 1),
-            max_date_allowed = Dates.now() + Dates.Day(1),
+            #max_date_allowed = Dates.now() + Dates.Day(1),
             start_date = Dates.now() - Dates.Day(7),
             end_date = Dates.now() + Dates.Day(1),
         ),
