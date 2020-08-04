@@ -5,11 +5,16 @@ function load(fname::AbstractString,model,channel)
     @info("fname $fname")
 
     df = DataFrame(CSV.File(fname, types = Dict(:channel => Int)))
-    df.time = DateTime.(df.time,dateformat"yyyy-mm-dd HH:MM:SS")
 
-    dfT = df[(df.model .== model) .& (df.channel .== channel),:]
-    @show size(dfT)
-    return dfT
+    if isempty(df)
+        return df
+    else
+        df.time = DateTime.(df.time,dateformat"yyyy-mm-dd HH:MM:SS")
+
+        dfT = df[(df.model .== model) .& (df.channel .== channel),:]
+        @show size(dfT)
+        return dfT
+    end
 end
 
 function load(fnames,model,channel)
